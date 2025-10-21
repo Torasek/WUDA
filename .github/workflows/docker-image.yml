@@ -1,0 +1,27 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  backend-frontend-cd:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [back-end, front-end]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Log in to GHCR
+      run: echo $CR_PAT | docker login ghcr.io -u Torasek --password-stdin
+      
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ${{ matrix.project }}:$(date +%s)
+
+    - name: Push the Docker image
+      run: docker push ghcr.io/Torasek/${{ matrix.project }}:latest
+      
